@@ -17,4 +17,3 @@ Jellyfin .edl file creation plugin for Kodi and other compatible players. See [K
 ## Issues
 
 - MediaSegment.ItemId is not linked to Library ItemId. Crash(?) may be possible when you look for a non existing ItemId. (Needs upstream evaluation)
-- Test broken

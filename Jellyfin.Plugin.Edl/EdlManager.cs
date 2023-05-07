@@ -110,20 +110,33 @@ public static class EdlManager
         var fstring = string.Empty;
         foreach (var segment in segments)
         {
-            var start = Math.Round(segment.Start, 2);
-            var end = Math.Round(segment.End, 2);
             var action = GetActionforType(segment.Type);
 
             // Skip None actions
             if (action != EdlAction.None)
             {
-                fstring += string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} \n", start, end, (int)action);
+                fstring += ToEdlString(segment.Start, segment.End, action);
             }
         }
 
         // remove last newline
         var newlineInd = fstring.LastIndexOf('\n');
         return newlineInd > 0 ? fstring.Substring(0, newlineInd) : fstring;
+    }
+
+    /// <summary>
+    /// Create EDL string based on Action with newline. Public for tests.
+    /// </summary>
+    /// <param name="start">Start position.</param>
+    /// <param name="end">End position.</param>
+    /// <param name="action">The Action.</param>
+    /// <returns>String content of edl file.</returns>
+    public static string ToEdlString(double start, double end, EdlAction action)
+    {
+        var rstart = Math.Round(start, 2);
+        var rend = Math.Round(end, 2);
+
+        return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} \n", rstart, rend, (int)action);
     }
 
     /// <summary>
