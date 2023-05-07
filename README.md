@@ -1,5 +1,5 @@
 # Jellyfin Plugin EDL
-Jellyfin .edl file creation plugin for Kodi and other compatible players
+Jellyfin .edl file creation plugin for Kodi and other compatible players. See [Kodi Wiki]([EDL](https://kodi.wiki/view/Edit_decision_list)).
 
 ## Requirements
 - Jellyfin Server with MediaSegment API
@@ -13,3 +13,4 @@ Jellyfin .edl file creation plugin for Kodi and other compatible players
 
 ## Issues
 - MediaSegment.ItemId is not linked to Library ItemId. Crash(?) may be possible when you look for a non existing ItemId. (Needs upstream evaluation)
+- Test broken

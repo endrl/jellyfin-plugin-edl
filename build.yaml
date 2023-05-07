@@ -9,7 +9,7 @@ description: >
   These files can be used by Kodi and other players
    to skip content like commercials and are stored next to your media. Therefore you need write access.
 category: "General"
-owner: "ConfusedPolarBear,Endrl"
+owner: "jellyfin"
 artifacts:
   - "Jellyfin.Plugin.Edl.dll"
 changelog: >
