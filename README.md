@@ -1,6 +1,6 @@
 # Jellyfin Plugin EDL
 
-Jellyfin .edl file creation plugin for Kodi and other compatible players. See [Kodi Wiki]([EDL](https://kodi.wiki/view/Edit_decision_list)).
+Jellyfin .edl file creation plugin for Kodi and other compatible players. See [Kodi Wiki](https://kodi.wiki/view/Edit_decision_list).
 
 ## Requirements
 
