@@ -17,3 +17,23 @@ Jellyfin .edl file creation plugin for Kodi and other compatible players. See [K
 ## Issues
 
 - MediaSegment.ItemId is not linked to Library ItemId. Crash(?) may be possible when you look for a non existing ItemId. (Needs upstream evaluation)
+
+### Debug Logging
+
+Change your logging.json file to output debug logs for `Jellyfin.Plugin.Edl`. Make sure to add a comma to the end of `"System": "Warning"`
+
+```jsonc
+{
+    "Serilog": {
+        "MinimumLevel": {
+            "Default": "Information",
+            "Override": {
+                "Microsoft": "Warning",
+                "System": "Warning",
+                "Jellyfin.Plugin.Edl": "Debug"
+            }
+        }
+       // other stuff
+    }
+}
+```
