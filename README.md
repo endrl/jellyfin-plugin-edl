@@ -4,7 +4,8 @@ Jellyfin .edl file creation plugin for Kodi and other compatible players. See [K
 
 ## Requirements
 
-- Jellyfin Server with MediaSegment API
+- Jellyfin Server with MediaSegment API!
+  - Please read these [instructions](https://github.com/endrl/segment-editor#installation)
 - A writeable media library! You can't use this plugin with read only media libraries!
 
 ## Installation instructions
