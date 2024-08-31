@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+
+## [0.3.0] - 2024-08-31
+
+### Added
+
+- Added http api endpoints to view and create edl files (with Segment Editor)
+
+### Fixed
+
+- No longer write empty files
+- Crash during segment sorting
+
+### Breaking
+
+- Requires now Jellyfin 10.10 unstable
+
+## [0.2.0] - 2023-11-03
+
+- Binary update
+
 ## [0.1.0] - 2023-05-08
 
 - Initial Release

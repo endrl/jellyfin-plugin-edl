@@ -114,6 +114,46 @@
                                 alongside your media files.
                             </div>
                         </div>
+                        <div class="selectContainer">
+                            <label class="selectLabel" for="UnknownEdlAction">Unknown EDL Action</label>
+                            <select is="emby-select" id="UnknownEdlAction" class="emby-select-withcolor emby-select">
+                                <option value="None">None (Don't add an action for preview)</option>
+
+                                <option value="CommercialBreak">Commercial Break (Skip)</option>
+
+                                <option value="Cut">Cut (player will remove segment from the video)</option>
+
+                                <option value="Mute">Mute (audio will be muted)</option>
+
+                                <option value="SceneMarker">Scene Marker (create a chapter marker)</option>
+                            </select>
+
+                            <div class="fieldDescription">
+                                EDL Action for "Unknown" Media Segments <br />
+                                Which action to write to
+                                <a href="https://kodi.wiki/view/Edit_decision_list">MPlayer compatible EDL files</a>
+                                alongside your media files.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="SelectedLibraries"> Limit analysis to the following libraries </label>
+                            <input id="SelectedLibraries" type="text" is="emby-input" />
+                            <div class="fieldDescription">Enter the names of libraries it should create EDL files for, separated by commas. If this field is left blank, all libraries on the server containing movies or television episodes will be used.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="SkippedTvShows"> Skip TV Shows </label>
+                            <input id="SkippedTvShows" type="text" is="emby-input" />
+                            <div class="fieldDescription">Enter the names of tv shows to skip the EDL creation, separated by commas. You can also skip seasons. Format: "My Show;S01;S02, Another Show, Third Show;S03;S05"</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="SkippedMovies"> Skip Movies </label>
+                            <input id="SkippedMovies" type="text" is="emby-input" />
+                            <div class="fieldDescription">Enter the names of Movies to skip the EDL creation, separated by commas. Format: "The Godfather, Spiderman, Matrix"</div>
+                        </div>
+
                         <div class="inputContainer">
                             <label class="inputLabel inputLabelUnfocused" for="MaxParallelism"> Maximum degree of parallelism </label>
                             <input id="MaxParallelism" type="number" is="emby-input" min="1" />
@@ -143,6 +183,7 @@
                 document.querySelector("#TemplateConfigPage").addEventListener("pageshow", function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(TemplateConfig.pluginUniqueId).then(function (config) {
+                        document.querySelector("#UnknownEdlAction").value = config.UnknownEdlAction;
                         document.querySelector("#IntroEdlAction").value = config.IntroEdlAction;
                         document.querySelector("#OutroEdlAction").value = config.OutroEdlAction;
                         document.querySelector("#PreviewEdlAction").value = config.PreviewEdlAction;
@@ -150,6 +191,9 @@
                         document.querySelector("#CommercialEdlAction").value = config.CommercialEdlAction;
                         document.querySelector("#OverwriteEdlFiles").checked = config.OverwriteEdlFiles;
                         document.querySelector("#MaxParallelism").value = config.MaxParallelism;
+                        document.querySelector("#SelectedLibraries").value = config.SelectedLibraries;
+                        document.querySelector("#SkippedTvShows").value = config.SkippedTvShows;
+                        document.querySelector("#SkippedMovies").value = config.SkippedMovies;
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -157,6 +201,7 @@
                 document.querySelector("#TemplateConfigForm").addEventListener("submit", function (e) {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(TemplateConfig.pluginUniqueId).then(function (config) {
+                        config.UnknownEdlAction = document.querySelector("#UnknownEdlAction").value;
                         config.IntroEdlAction = document.querySelector("#IntroEdlAction").value;
                         config.OutroEdlAction = document.querySelector("#OutroEdlAction").value;
                         config.PreviewEdlAction = document.querySelector("#PreviewEdlAction").value;
@@ -164,6 +209,9 @@
                         config.CommercialEdlAction = document.querySelector("#CommercialEdlAction").value;
                         config.OverwriteEdlFiles = document.querySelector("#OverwriteEdlFiles").checked;
                         config.MaxParallelism = document.querySelector("#MaxParallelism").value;
+                        config.SelectedLibraries = document.querySelector("#SelectedLibraries").value;
+                        config.SkippedTvShows = document.querySelector("#SkippedTvShows").value;
+                        config.SkippedMovies = document.querySelector("#SkippedMovies").value;
                         ApiClient.updatePluginConfiguration(TemplateConfig.pluginUniqueId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                         });

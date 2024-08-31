@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
-using Jellyfin.Data.Entities;
 using Jellyfin.Plugin.Edl.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.MediaSegments;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
@@ -20,7 +17,6 @@ namespace Jellyfin.Plugin.Edl;
 public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
     private ILibraryManager _libraryManager;
-    private IMediaSegmentsManager _mediaSegmentsManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Plugin"/> class.
@@ -28,18 +24,15 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
     /// <param name="libraryManager">Library manager.</param>
-    /// <param name="mediaSegmentsManager">Segments manager.</param>
     public Plugin(
         IApplicationPaths applicationPaths,
         IXmlSerializer xmlSerializer,
-        ILibraryManager libraryManager,
-        IMediaSegmentsManager mediaSegmentsManager)
+        ILibraryManager libraryManager)
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
 
         _libraryManager = libraryManager;
-        _mediaSegmentsManager = mediaSegmentsManager;
     }
 
     /// <inheritdoc />
@@ -66,18 +59,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         };
     }
 
-    /// <summary>
-    /// Gets all media segments from db.
-    /// </summary>
-    /// <returns>All media segments.</returns>
-    public ReadOnlyCollection<MediaSegment> GetAllMediaSegments()
-    {
-        return _mediaSegmentsManager.GetAllMediaSegments().AsReadOnly();
-    }
-
     internal BaseItem GetItem(Guid id)
     {
+#pragma warning disable CS8603 // Possible null reference return.
         return _libraryManager.GetItemById(id);
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     /// <summary>

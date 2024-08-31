@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.Edl;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.MediaSegments;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -18,17 +20,22 @@ public class CreateEdlTask : IScheduledTask
 
     private readonly ILibraryManager _libraryManager;
 
+    private readonly IMediaSegmentManager _mediaSegmentManager;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateEdlTask"/> class.
     /// </summary>
     /// <param name="loggerFactory">Logger factory.</param>
     /// <param name="libraryManager">Library manager.</param>
+    /// <param name="mediaSegmentManager">MediaSegment manager.</param>
     public CreateEdlTask(
         ILoggerFactory loggerFactory,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        IMediaSegmentManager mediaSegmentManager)
     {
         _loggerFactory = loggerFactory;
         _libraryManager = libraryManager;
+        _mediaSegmentManager = mediaSegmentManager;
     }
 
     /// <summary>
@@ -57,7 +64,7 @@ public class CreateEdlTask : IScheduledTask
     /// <param name="progress">Task progress.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
-    public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         if (_libraryManager is null)
         {
@@ -65,13 +72,26 @@ public class CreateEdlTask : IScheduledTask
         }
 
         var baseEdlTask = new BaseEdlTask(
-            _loggerFactory.CreateLogger<CreateEdlTask>(),
-            _loggerFactory,
-            _libraryManager);
+            _loggerFactory.CreateLogger<CreateEdlTask>());
 
-        baseEdlTask.CreateEdls(progress, cancellationToken);
+        var queueManager = new QueueManager(_loggerFactory.CreateLogger<QueueManager>(), _libraryManager);
 
-        return Task.CompletedTask;
+        var segmentsList = new List<MediaSegmentDto>();
+        // get ItemIds
+        var mediaItems = queueManager.GetMediaItems();
+        // get MediaSegments from itemIds
+        foreach (var kvp in mediaItems)
+        {
+            foreach (var media in kvp.Value)
+            {
+                segmentsList.AddRange(await _mediaSegmentManager.GetSegmentsAsync(media.ItemId, null).ConfigureAwait(false));
+            }
+        }
+
+        // write edl files
+        baseEdlTask.CreateEdls(progress, segmentsList.AsReadOnly(), false, cancellationToken);
+
+        return;
     }
 
     /// <summary>

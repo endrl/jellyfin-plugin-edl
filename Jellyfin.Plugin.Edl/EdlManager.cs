@@ -2,9 +2,10 @@ namespace Jellyfin.Plugin.Edl;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Model.MediaSegments;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -40,6 +41,7 @@ public static class EdlManager
         _logger.LogDebug("Outro EdlAction: {Action}", config.OutroEdlAction);
         _logger.LogDebug("Preview EdlAction: {Action}", config.PreviewEdlAction);
         _logger.LogDebug("Recap EdlAction: {Action}", config.RecapEdlAction);
+        _logger.LogDebug("Unknown EdlAction: {Action}", config.UnknownEdlAction);
         _logger.LogDebug("Commercial EdlAction: {Action}", config.CommercialEdlAction);
         _logger.LogDebug("Max Parallelism: {Action}", config.MaxParallelism);
     }
@@ -48,14 +50,17 @@ public static class EdlManager
     /// Update EDL file for the provided segments.
     /// </summary>
     /// <param name="psegment">Key value pair of segments dictionary.</param>
-    public static void UpdateEDLFile(KeyValuePair<Guid, List<MediaSegment>> psegment)
+    /// <param name="forceOverwrite">Force the file overwrite.</param>
+    public static void UpdateEDLFile(KeyValuePair<Guid, List<MediaSegmentDto>> psegment, bool forceOverwrite)
     {
-        var overwrite = Plugin.Instance!.Configuration.OverwriteEdlFiles;
+        var overwrite = Plugin.Instance!.Configuration.OverwriteEdlFiles || forceOverwrite;
         var id = psegment.Key;
         var segments = psegment.Value;
 
-        // Test if there ara any segments
-        if (segments.Count > 0)
+        var edlContent = ToEdl(segments.AsReadOnly());
+
+        // Test if we generated data
+        if (!string.IsNullOrEmpty(edlContent))
         {
             var filePath = Plugin.Instance!.GetItemPath(id);
 
@@ -69,7 +74,6 @@ public static class EdlManager
                 if (!fexists || (fexists && overwrite))
                 {
                     var oldContent = string.Empty;
-                    var edlContent = ToEdl(segments);
                     var update = false;
 
                     try
@@ -98,6 +102,10 @@ public static class EdlManager
                 }
             }
         }
+        else
+        {
+            _logger?.LogDebug("Skip id ({Id}) no edl data generated", id);
+        }
     }
 
     /// <summary>
@@ -105,7 +113,7 @@ public static class EdlManager
     /// </summary>
     /// <param name="segments">The Segments.</param>
     /// <returns>String content of edl file.</returns>
-    private static string ToEdl(List<MediaSegment> segments)
+    public static string ToEdl(ReadOnlyCollection<MediaSegmentDto> segments)
     {
         var fstring = string.Empty;
         foreach (var segment in segments)
@@ -115,7 +123,7 @@ public static class EdlManager
             // Skip None actions
             if (action != EdlAction.None)
             {
-                fstring += ToEdlString(segment.Start, segment.End, action);
+                fstring += ToEdlString(segment.StartTicks, segment.EndTicks, action);
             }
         }
 
@@ -131,10 +139,10 @@ public static class EdlManager
     /// <param name="end">End position.</param>
     /// <param name="action">The Action.</param>
     /// <returns>String content of edl file.</returns>
-    public static string ToEdlString(double start, double end, EdlAction action)
+    public static string ToEdlString(long start, long end, EdlAction action)
     {
-        var rstart = Math.Round(start, 2);
-        var rend = Math.Round(end, 2);
+        var rstart = Math.Round((double)start / 10_000_000, 3);
+        var rend = Math.Round((double)end / 10_000_000, 3);
 
         return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} {1} {2} \n", rstart, rend, (int)action);
     }
@@ -148,6 +156,8 @@ public static class EdlManager
     {
         switch (type)
         {
+            case MediaSegmentType.Unknown:
+                return Plugin.Instance!.Configuration.UnknownEdlAction;
             case MediaSegmentType.Intro:
                 return Plugin.Instance!.Configuration.IntroEdlAction;
             case MediaSegmentType.Outro:

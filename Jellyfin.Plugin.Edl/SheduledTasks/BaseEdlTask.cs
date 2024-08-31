@@ -6,9 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
-using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.MediaSegments;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
@@ -18,24 +16,14 @@ public class BaseEdlTask
 {
     private readonly ILogger _logger;
 
-    private readonly ILoggerFactory _loggerFactory;
-
-    private readonly ILibraryManager _libraryManager;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseEdlTask"/> class.
     /// </summary>
     /// <param name="logger">Task logger.</param>
-    /// <param name="loggerFactory">Logger factory.</param>
-    /// <param name="libraryManager">Library manager.</param>
     public BaseEdlTask(
-        ILogger logger,
-        ILoggerFactory loggerFactory,
-        ILibraryManager libraryManager)
+        ILogger logger)
     {
         _logger = logger;
-        _loggerFactory = loggerFactory;
-        _libraryManager = libraryManager;
 
         EdlManager.Initialize(_logger);
     }
@@ -44,23 +32,26 @@ public class BaseEdlTask
     /// Create edls for all Segments on the server.
     /// </summary>
     /// <param name="progress">Progress.</param>
+    /// <param name="segmentsQueue">Media segments.</param>
+    /// <param name="forceOverwrite">Force the file overwrite.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public void CreateEdls(
         IProgress<double> progress,
+        ReadOnlyCollection<MediaSegmentDto> segmentsQueue,
+        bool forceOverwrite,
         CancellationToken cancellationToken)
     {
-        var segmentsQueue = Plugin.Instance!.GetAllMediaSegments();
-        var sortedSegments = new Dictionary<Guid, List<MediaSegment>>();
+        var sortedSegments = new Dictionary<Guid, List<MediaSegmentDto>>();
 
         foreach (var segment in segmentsQueue)
         {
-            if (sortedSegments.TryGetValue(segment.ItemId, out var list))
+            if (sortedSegments.TryGetValue(segment.ItemId, out List<MediaSegmentDto>? list))
             {
-                sortedSegments[segment.ItemId] = (List<MediaSegment>)list.Append(segment);
+                sortedSegments[segment.ItemId] = list.Append(segment).ToList();
             }
             else
             {
-                sortedSegments.Add(segment.ItemId, new List<MediaSegment> { segment });
+                sortedSegments.Add(segment.ItemId, new List<MediaSegmentDto> { segment });
             }
         }
 
@@ -81,17 +72,10 @@ public class BaseEdlTask
                 return;
             }
 
-            EdlManager.UpdateEDLFile(segment);
+            EdlManager.UpdateEDLFile(segment, forceOverwrite);
             Interlocked.Add(ref totalProcessed, 1);
 
             progress.Report((totalProcessed * 100) / totalQueued);
         });
-
-        if (Plugin.Instance!.Configuration.OverwriteEdlFiles)
-        {
-            _logger.LogInformation("Turning EDL file regeneration flag off");
-            Plugin.Instance!.Configuration.OverwriteEdlFiles = false;
-            Plugin.Instance!.SaveConfiguration();
-        }
     }
 }
