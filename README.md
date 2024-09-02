@@ -1,11 +1,18 @@
 # Jellyfin Plugin EDL
 
-Jellyfin .edl file creation plugin for Kodi and other compatible players. See [Kodi Wiki](https://kodi.wiki/view/Edit_decision_list). Converts MediaSegments based on plugin settings.
+Jellyfin .edl file creation plugin for Kodi and other compatible players. See [Kodi Wiki](https://kodi.wiki/view/Edit_decision_list).
 
 ## Requirements
 
 - ⚠️ Jellyfin 10.10 unstable
 - A writeable media library! You can't use this plugin with read only media libraries!
+
+## Features
+- Convert Media Segments (Intro, Outro,...) to .edl files
+- Integrated into [Jellyfin Segment Editor](https://github.com/endrl/segment-editor?tab=readme-ov-file#jellyfin-segment-editor)
+- Supported Media Types
+  - TV Shows
+  - Movies
 
 ## Installation instructions
 
@@ -13,7 +20,8 @@ Jellyfin .edl file creation plugin for Kodi and other compatible players. See [K
 2. Install the EDL Creator plugin from the General section
 3. Restart Jellyfin
 4. Go to Dashboard -> Scheduled Tasks -> Create EDL and click the play button
-5. There is no Task Timer configured, create one if you want to scan daily
+5. Configure the "Edl Action" for different segment types in plugin settings
+6. There is no Task Timer configured, create one if you want to scan daily
 
 ### Debug Logging
 
